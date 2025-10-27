@@ -15,10 +15,6 @@ yarn-error.log*
 logs
 *.log
 
-# Archivos de almacenamiento (NO subir archivos de usuarios)
-src/storage/*
-!src/storage/.gitkeep
-
 # Sistema operativo
 .DS_Store
 Thumbs.db
