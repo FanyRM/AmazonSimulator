@@ -17,6 +17,7 @@ class LocalS3Service {
   }
 
   getFilePath(bucket, fileName) {
+    // fileName puede contener subdirectorios: "folder/subfolder/file.jpg"
     return path.join(this.storagePath, bucket, fileName);
   }
 
@@ -25,10 +26,20 @@ class LocalS3Service {
     await fs.ensureDir(bucketPath);
   }
 
+  async ensureDirectoryExists(filePath) {
+    // ✅ NUEVO: Asegurar que todos los directorios padres existan
+    const directory = path.dirname(filePath);
+    await fs.ensureDir(directory);
+  }
+
   async uploadFile(bucket, fileName, base64Content) {
     await this.ensureBucketExists(bucket);
 
     const filePath = this.getFilePath(bucket, fileName);
+
+    // ✅ CORREGIDO: Asegurar que todos los directorios padres existan
+    await this.ensureDirectoryExists(filePath);
+
     const buffer = Buffer.from(base64Content, "base64");
 
     await fs.writeFile(filePath, buffer);
@@ -52,6 +63,11 @@ class LocalS3Service {
   async getFile(bucket, fileName) {
     const filePath = this.getFilePath(bucket, fileName);
 
+    // ✅ CORREGIDO: Verificar que el archivo existe antes de leerlo
+    if (!(await fs.pathExists(filePath))) {
+      throw new Error(`File not found: ${fileName}`);
+    }
+
     const buffer = await fs.readFile(filePath);
     const base64Content = buffer.toString("base64");
     const stats = await fs.stat(filePath);
@@ -70,11 +86,23 @@ class LocalS3Service {
 
   async getFileBuffer(bucket, fileName) {
     const filePath = this.getFilePath(bucket, fileName);
+
+    // ✅ CORREGIDO: Verificar que el archivo existe
+    if (!(await fs.pathExists(filePath))) {
+      throw new Error(`File not found: ${fileName}`);
+    }
+
     return await fs.readFile(filePath);
   }
 
   async deleteFile(bucket, fileName) {
     const filePath = this.getFilePath(bucket, fileName);
+
+    // ✅ CORREGIDO: Verificar que el archivo existe antes de eliminarlo
+    if (!(await fs.pathExists(filePath))) {
+      throw new Error(`File not found: ${fileName}`);
+    }
+
     await fs.remove(filePath);
 
     return {
@@ -115,7 +143,9 @@ class LocalS3Service {
   }
 
   getMimeType(fileName) {
-    return mime.lookup(fileName) || "application/octet-stream";
+    // ✅ CORREGIDO: Obtener solo el nombre del archivo para el MIME type
+    const baseName = path.basename(fileName);
+    return mime.lookup(baseName) || "application/octet-stream";
   }
 }
 
