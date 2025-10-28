@@ -61,7 +61,8 @@ class LocalS3Service {
   }
 
   async getFile(bucket, fileName) {
-    const filePath = this.getFilePath(bucket, fileName);
+    const decodedFileName = decodeURIComponent(fileName);
+    const filePath = this.getFilePath(bucket, decodedFileName);
 
     // ✅ CORREGIDO: Verificar que el archivo existe antes de leerlo
     if (!(await fs.pathExists(filePath))) {
@@ -85,7 +86,8 @@ class LocalS3Service {
   }
 
   async getFileBuffer(bucket, fileName) {
-    const filePath = this.getFilePath(bucket, fileName);
+    const decodedFileName = decodeURIComponent(fileName);
+    const filePath = this.getFilePath(bucket, decodedFileName);
 
     // ✅ CORREGIDO: Verificar que el archivo existe
     if (!(await fs.pathExists(filePath))) {
@@ -96,7 +98,8 @@ class LocalS3Service {
   }
 
   async deleteFile(bucket, fileName) {
-    const filePath = this.getFilePath(bucket, fileName);
+    const decodedFileName = decodeURIComponent(fileName);
+    const filePath = this.getFilePath(bucket, decodedFileName);
 
     // ✅ CORREGIDO: Verificar que el archivo existe antes de eliminarlo
     if (!(await fs.pathExists(filePath))) {
